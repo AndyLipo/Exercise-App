@@ -9,7 +9,7 @@ const HorizontalScrollbar = ({ data, bodyParts, setBodyPart, bodyPart }) => {
     <Box
      sx={{
         display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", // Tamaño más pequeño
+        gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", // Tamaño más pequeño
         gap: "100px", // Menos espacio entre elementos
         justifyContent: "center",
         alignItems: "center",
