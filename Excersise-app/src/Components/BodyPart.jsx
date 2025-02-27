@@ -29,8 +29,8 @@ const BodyPart = ({ item, setBodyPart, bodyPart }) => {
         color="#3A1212"
         textTransform="capitalize"
       >
-        {item}
-      </Typography>
+        {item.name || item}  
+  </Typography>
     </Stack>
   );
 };
