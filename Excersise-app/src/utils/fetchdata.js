@@ -1,10 +1,11 @@
 
-// ✅ URL de la API externa ExerciseDB
 import axios from 'axios';
 
 const API_URL = 'https://wger.de/api/v2/exercise/';
+const IMAGE_API_URL = 'https://wger.de/api/v2/exerciseimage/';
 const API_KEY = '78c0c51eff3f00ec2199c9b8914d529d57bc6165'; // Reemplázalo con tu clave real
-
+const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/400x400?text=No+Image';
+const API_KEY_YOUTUBE = 'AIzaSyDfWM59zpv4QPgM_VRTKvw81ro5V0alUDs'
 // 🔹 Función para obtener todos los ejercicios
 export const fetchExercises = async () => {
   try {
@@ -23,52 +24,10 @@ export const fetchExercises = async () => {
 };
 
 // 🔹 Función para buscar ejercicios por nombre
-// export const fetchExercisesBySearch = async (searchTerm) => {
-//   try {
-//     // Obtiene los datos sin filtrar de la API
-//     const response = await fetch('https://wger.de/api/v2/exercise/?limit=50', {
-//       method: 'GET',
-//       headers: {
-//         'Content-Type': 'application/json'
-//       }
-//     });
-    
-//     if (!response.ok) {
-//       throw new Error('Error al obtener ejercicios');
-//     }
-    
-//     const data = await response.json();
-//     console.log("Datos completos de ejercicios:", data);
-    
-//     // Filtra los resultados según el término de búsqueda
-//     // Esto parece no estar sucediendo en la API, así que debemos hacerlo manualmente
-//     const filteredResults = data.results.filter(exercise => {
-//       const searchTermLower = searchTerm.toLowerCase();
-      
-//       // Comprobamos si los campos existen y contienen el término de búsqueda
-//       return (
-//         (exercise.name && exercise.name.toLowerCase().includes(searchTermLower)) ||
-//         (exercise.description && exercise.description.toLowerCase().includes(searchTermLower))
-//       );
-//     });
-    
-//     // Devuelve un objeto con la misma estructura pero con resultados filtrados
-//     return {
-//       ...data,
-//       results: filteredResults
-//     };
-    
-//   } catch (error) {
-//     console.error('Error fetching exercises:', error);
-//     return { results: [] };
-//   }
-// };
-
-
-// 🔹 Función para buscar ejercicios por nombre
 export const fetchExercisesBySearch = async (searchTerm) => {
   try {
-    const response = await fetch('https://wger.de/api/v2/exercise/?limit=50', {
+    console.log(`🔎 Iniciando búsqueda con término: ${searchTerm}`);
+    const response = await fetch(`${API_URL}?limit=50`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -80,7 +39,7 @@ export const fetchExercisesBySearch = async (searchTerm) => {
     }
 
     const data = await response.json();
-    console.log("Datos completos de ejercicios:", data);
+    console.log("📋 Datos completos de ejercicios:", data);
 
     // Filtrar los ejercicios según el término de búsqueda
     const filteredResults = data.results.filter(exercise => {
@@ -91,18 +50,35 @@ export const fetchExercisesBySearch = async (searchTerm) => {
       );
     });
 
-    // Ahora, para cada ejercicio, obtenemos las imágenes relacionadas
+    console.log(`✅ Se encontraron ${filteredResults.length} ejercicios.`);
+
+    // Obtener imágenes para cada ejercicio
     const exercisesWithImages = await Promise.all(
       filteredResults.map(async (exercise) => {
-        // Obtener imágenes para el ejercicio
-        const imageResponse = await fetch(`https://wger.de/api/v2/exerciseimage/?exercise=${exercise.id}`);
-        const imageData = await imageResponse.json();
-        
-        // Obtener la URL de la primera imagen (si existe)
-        const imageUrl = imageData.results.length > 0 ? imageData.results[0].image : null;
+        console.log(`🔎 Buscando imagen para ejercicio ID: ${exercise.id}, Base: ${exercise.exercise_base}`);
 
-        // Añadir la URL de la imagen al ejercicio
-        return { ...exercise, gifUrl: imageUrl };
+        try {
+          // Intentar obtener imágenes usando exercise_base
+          let imageResponse = await fetch(`${IMAGE_API_URL}?exercise_base=${exercise.exercise_base}`);
+          let imageData = await imageResponse.json();
+
+          // Si no hay imágenes con exercise_base, intentamos con exercise.id
+          if (!imageData.results.length) {
+            console.log(`🚨 No se encontraron imágenes para Base ID ${exercise.exercise_base}. Probando con ID ${exercise.id}`);
+            imageResponse = await fetch(`${IMAGE_API_URL}?exercise=${exercise.id}`);
+            imageData = await imageResponse.json();
+          }
+
+          console.log(`📷 Imágenes encontradas para ID ${exercise.id}:`, imageData.results);
+
+          // Seleccionar la primera imagen disponible o un placeholder si no hay ninguna
+          const imageUrl = imageData.results.length > 0 ? imageData.results[0].image : PLACEHOLDER_IMAGE;
+
+          return { ...exercise, gifUrl: imageUrl };
+        } catch (error) {
+          console.error(`❌ Error al obtener imagen para el ejercicio ${exercise.id}:`, error);
+          return { ...exercise, gifUrl: PLACEHOLDER_IMAGE };
+        }
       })
     );
 
@@ -112,7 +88,7 @@ export const fetchExercisesBySearch = async (searchTerm) => {
     };
 
   } catch (error) {
-    console.error('Error fetching exercises:', error);
+    console.error('❌ Error fetching exercises:', error);
     return { results: [] };
   }
 };
@@ -126,10 +102,10 @@ export const fetchExerciseById = async (id) => {
       }
     });
 
-    console.log('Detalles del ejercicio:', response.data);
+    console.log('📌 Detalles del ejercicio:', response.data);
     return response.data;
   } catch (error) {
-    console.error('Error al obtener el ejercicio:', error);
+    console.error('❌ Error al obtener el ejercicio:', error);
     return null;
   }
 };
@@ -143,25 +119,105 @@ export const fetchBodyParts = async () => {
       }
     });
 
-    console.log('Categorías de ejercicios:', response.data.results);
+    console.log('📂 Categorías de ejercicios:', response.data.results);
     return response.data.results;
   } catch (error) {
-    console.error('Error al obtener las partes del cuerpo:', error);
+    console.error('❌ Error al obtener las partes del cuerpo:', error);
     return [];
   }
 };
 
 export const fetchExerciseImages = async (exerciseId) => {
   try {
-    const response = await axios.get(`https://wger.de/api/v2/exerciseimage/?exercise=${exerciseId}`, {
+    console.log(`🔎 Buscando imágenes para el ejercicio ID: ${exerciseId}`);
+    
+    // Primero, obtener los detalles del ejercicio para conseguir el exercise_base
+    const exerciseDetails = await axios.get(`${API_URL}${exerciseId}/`, {
       headers: {
         'Authorization': `Token ${API_KEY}`
       }
     });
-    console.log('Imágenes del ejercicio:', response.data);
-    return response.data.results; // Devuelve las imágenes
+    
+    const exerciseBase = exerciseDetails.data.exercise_base;
+    console.log(`🔍 Exercise Base encontrado: ${exerciseBase}`);
+    
+    // Buscar imágenes por exercise base
+    const response = await axios.get(`${IMAGE_API_URL}?exercise_base=${exerciseBase}`, {
+      headers: {
+        'Authorization': `Token ${API_KEY}`
+      }
+    });
+    
+    // Filtrar imágenes para asegurar que correspondan al exercise_base correcto
+    const imageUrls = response.data.results
+      .filter(img => img.exercise_base === exerciseBase)
+      .map(img => img.image)
+      .filter(url => url && url.startsWith('http'));
+    
+    console.log('🖼️ URLs de imágenes encontradas:', imageUrls);
+    
+    return imageUrls.length > 0 ? imageUrls : [];
   } catch (error) {
-    console.error('Error al obtener las imágenes del ejercicio:', error);
+    console.error('❌ Error al obtener las imágenes del ejercicio:', error);
+    
+    // Más registro detallado de errores
+    if (error.response) {
+      console.error('Error response data:', error.response.data);
+      console.error('Error response status:', error.response.status);
+      console.error('Error response headers:', error.response.headers);
+    }
+    
+    return [];
+  }
+};
+
+
+export const fetchExerciseVideos = async (exerciseId) => {
+  try {
+    // First, fetch the exercise base information
+    const exerciseResponse = await axios.get(`https://wger.de/api/v2/exercise/${exerciseId}/`);
+    const exerciseName = exerciseResponse.data.name;
+
+    // Fetch videos from YouTube
+    const youtubeResponse = await axios.get('https://www.googleapis.com/youtube/v3/search', {
+      params: {
+        part: 'snippet',
+        q: `${exerciseName} exercise tutorial`,
+        type: 'video',
+        maxResults: 3,
+        key: API_KEY_YOUTUBE // Use environment variable
+      }
+    });
+
+    console.log('YouTube Videos Raw Response:', youtubeResponse.data);
+
+    // Transform YouTube video data
+    const transformedVideos = youtubeResponse.data.items.map(video => ({
+      video: {
+        videoId: video.id.videoId,
+        title: video.snippet.title,
+        channelName: video.snippet.channelTitle,
+        thumbnails: [
+          { url: video.snippet.thumbnails.medium.url }
+        ],
+        video: `https://www.youtube.com/watch?v=${video.id.videoId}`
+      }
+    }));
+
+    console.log('Transformed Videos:', transformedVideos);
+
+    return transformedVideos;
+
+  } catch (error) {
+    console.error(`Error fetching videos for exercise ${exerciseId}:`, error);
+    
+    // More detailed error logging
+    if (error.response) {
+      console.error('Error response data:', error.response.data);
+      console.error('Error response status:', error.response.status);
+      console.error('Error response headers:', error.response.headers);
+    }
+    
     return [];
   }
 };
