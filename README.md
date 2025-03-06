@@ -28,7 +28,7 @@ Welcome to the **Modern React Fitness Exercises App**! This project is built usi
 
 | API | Description |
 |------|------------|
-| [RapidAPI](https://rapidapi.com/hub) | The largest API hub with thousands of APIs |
+| [Wger](https://wger.de/es/dashboard) |The gym API |
 | [ExerciseDB API](https://rapidapi.com/justin-WFnsXH_t6/api/exercisedb) | Get data on 1,000+ exercises |
 | [YouTube Search API](https://rapidapi.com/h0p3rwe/api/youtube-search) | Fetch related exercise videos |
 
