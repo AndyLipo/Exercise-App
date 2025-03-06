@@ -18,10 +18,10 @@ Welcome to the **Modern React Fitness Exercises App**! This project is built usi
 
 - **React 18** ⚛️
 - **Material UI (v5)** 🎨
-- **RapidAPI** for fetching exercise and video data 🌍
+- **Wger** for fetching exercise data 🌍
 - **React Hooks & Functional Components** 🔄
 - **Modern File Structure & Best Practices** 🏗️
-
+-**Youtube Api** for fetching videos
 ---
 
 ## 🌐 APIs Used
