@@ -1,8 +1,14 @@
+
+
 import { Link } from 'react-router-dom';
 import { Button, Stack, Typography, Box } from '@mui/material';
 
 const ExerciseCard = ({ exercise }) => {
   console.log('Exercise data:', exercise); // Depuración
+  console.log('Image URL:', exercise.gifUrl || exercise.image);
+
+  const validImage = exercise.gifUrl || exercise.image;
+  const fallbackImage = 'https://via.placeholder.com/400x400?text=Image+Not+Found';
 
   const buttonStyle = {
     ml: '21px',
@@ -18,10 +24,10 @@ const ExerciseCard = ({ exercise }) => {
       to={`/exercise/${exercise.id}`} 
       aria-label={`Ver detalles del ejercicio: ${exercise.name}`}
     >
-      {exercise.gifUrl ? (
+      {validImage ? (
         <Box 
           component="img"
-          src={exercise.gifUrl}
+          src={validImage} 
           alt={exercise.name || 'Ejercicio'}
           loading="lazy"
           sx={{
@@ -30,8 +36,8 @@ const ExerciseCard = ({ exercise }) => {
             borderRadius: '8px',
           }}
           onError={(e) => {
-            console.error('Image failed to load:', exercise.gifUrl);
-            e.target.src = 'https://via.placeholder.com/400x400?text=Image+Not+Found';
+            console.error('Image failed to load:', validImage);
+            e.target.src = fallbackImage;
           }}
         />
       ) : (

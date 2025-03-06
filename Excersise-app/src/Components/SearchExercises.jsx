@@ -1,4 +1,3 @@
-
 import { Stack, Typography, Box, TextField, Button } from "@mui/material";
 import { useEffect, useState } from "react";
 import { fetchExercisesBySearch, fetchBodyParts } from "../utils/fetchdata";
@@ -33,13 +32,11 @@ const SearchExercises = ({ setExercises, bodyPart, setBodyPart }) => {
     try {
       const exerciseData = await fetchExercisesBySearch(search);
       
-      // Si no hay resultados, mostrar mensaje pero mantener el estado limpio
       if (!exerciseData || !exerciseData.results || exerciseData.results.length === 0) {
         console.log("No se encontraron ejercicios");
         setSearchedExercises([]);
         setExercises([]);
       } else {
-        // Mostrar los resultados
         console.log(`Se encontraron ${exerciseData.results.length} ejercicios`);
         setSearchedExercises(exerciseData.results);
         setExercises(exerciseData.results);
@@ -52,10 +49,22 @@ const SearchExercises = ({ setExercises, bodyPart, setBodyPart }) => {
       setIsSearching(false);
     }
   };
- 
+
   return (
-    <Stack alignItems="center" justifyContent="center" mt="37px" p="20px" width="100%" sx={{ width: "1270px", maxWidth: "1270px", overflow: "hidden" }}>
-      <Typography fontWeight={700} sx={{ fontSize: { lg: "44px", xs: "30px" } }} mb="49px" textAlign="center">
+    <Stack
+      alignItems="center"
+      justifyContent="center"
+      mt="37px"
+      p="20px"
+      width="100%"
+      sx={{ width: "100%", maxWidth: "1270px", overflow: "hidden" }}
+    >
+      <Typography
+        fontWeight={700}
+        sx={{ fontSize: { lg: "44px", xs: "30px" } }}
+        mb="49px"
+        textAlign="center"
+      >
         Awesome Exercises You <br /> Should Know
       </Typography>
 
@@ -64,16 +73,17 @@ const SearchExercises = ({ setExercises, bodyPart, setBodyPart }) => {
         <TextField
           sx={{
             input: { fontWeight: "700", border: "none", borderRadius: "4px" },
-            width: { lg: "1170px", xs: "90%" },
+            width: { lg: "70%", xs: "80%" }, // Ajustado para dispositivos móviles
             backgroundColor: "#fff",
             borderRadius: "40px",
+            padding: "0 16px", // Añadido padding para mejorar la apariencia en dispositivos móviles
           }}
           value={search}
           onChange={(e) => setSearch(e.target.value.toLowerCase())}
           placeholder="Search Exercises"
           type="text"
           onKeyPress={(e) => {
-            if (e.key === 'Enter') handleSearch();
+            if (e.key === "Enter") handleSearch();
           }}
         />
         <Button
@@ -82,11 +92,11 @@ const SearchExercises = ({ setExercises, bodyPart, setBodyPart }) => {
             bgcolor: "#FF2625",
             color: "#fff",
             textTransform: "none",
-            width: { lg: "173px", xs: "80px" },
+            width: { lg: "173px", xs: "70px" }, // Ajustado para pantallas más pequeñas
             height: "56px",
             position: "absolute",
             right: { lg: "0px", xs: "10px" },
-            fontSize: { lg: "20px", xs: "14px" },
+            fontSize: { lg: "20px", xs: "12px" }, // Tamaño de fuente más pequeño en móvil
           }}
           onClick={handleSearch}
           disabled={isSearching}

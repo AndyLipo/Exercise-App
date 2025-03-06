@@ -221,3 +221,130 @@ export const fetchExerciseVideos = async (exerciseId) => {
     return [];
   }
 };
+export const fetchSimilarEquipmentExercises = async (equipmentId, excludeExerciseId) => {
+  try {
+    if (!equipmentId) {
+      console.error('No se proporcionó ID de equipo');
+      return [];
+    }
+    
+    console.log(`Buscando ejercicios con equipo similar (ID: ${equipmentId}, excluyendo ejercicio ID: ${excludeExerciseId})`);
+    
+    const response = await axios.get(`https://wger.de/api/v2/exercise/?equipment=${equipmentId}&limit=12`, {
+      headers: {
+        'Authorization': `Token ${API_KEY}`
+      }
+    });
+
+    // Filtrar para no incluir el ejercicio actual y limitar a 6 ejercicios
+    const similarExercises = response.data.results
+      .filter(exercise => exercise.id.toString() !== excludeExerciseId.toString())
+      .slice(0, 6);
+
+    console.log(`📂 Ejercicios con el mismo equipo (${equipmentId}):`, similarExercises);
+
+    // Para cada ejercicio similar, obtener su imagen y añadir la URL al objeto
+    const exercisesWithImages = await Promise.all(
+      similarExercises.map(async (exercise) => {
+        try {
+          const imageUrl = await fetchSimilarExerciseImages(exercise.id);
+          
+          // Crear un nuevo objeto con todos los datos del ejercicio más la imagen
+          return {
+            ...exercise,
+            image: imageUrl
+          };
+        } catch (error) {
+          console.error(`Error al procesar imagen para ejercicio ${exercise.id}:`, error);
+          return {
+            ...exercise,
+            image: 'https://via.placeholder.com/150?text=No+Image+Available'
+          };
+        }
+      })
+    );
+
+    console.log('Ejercicios con imágenes (equipment):', exercisesWithImages);
+    return exercisesWithImages;
+  } catch (error) {
+    console.error(`❌ Error al obtener ejercicios similares por equipo (${equipmentId}):`, error);
+    return [];
+  }
+};
+
+// Función para obtener ejercicios que trabajan el mismo músculo
+export const fetchSimilarMuscleExercises = async (muscleId, excludeExerciseId) => {
+  try {
+    if (!muscleId) {
+      console.error('No se proporcionó ID de músculo');
+      return [];
+    }
+    
+    console.log(`Buscando ejercicios con músculo similar (ID: ${muscleId}, excluyendo ejercicio ID: ${excludeExerciseId})`);
+    
+    const response = await axios.get(`https://wger.de/api/v2/exercise/?muscles=${muscleId}&limit=12`, {
+      headers: {
+        'Authorization': `Token ${API_KEY}`
+      }
+    });
+
+    // Filtrar para no incluir el ejercicio actual y limitar a 6 ejercicios
+    const similarExercises = response.data.results
+      .filter(exercise => exercise.id.toString() !== excludeExerciseId.toString())
+      .slice(0, 6);
+
+    console.log(`📂 Ejercicios que trabajan el músculo (${muscleId}):`, similarExercises);
+
+    // Para cada ejercicio similar, obtener su imagen
+    const exercisesWithImages = await Promise.all(
+      similarExercises.map(async (exercise) => {
+        try {
+          const imageUrl = await fetchSimilarExerciseImages(exercise.id);
+          
+          // Crear un nuevo objeto con todos los datos del ejercicio más la imagen
+          return {
+            ...exercise,
+            image: imageUrl
+          };
+        } catch (error) {
+          console.error(`Error al procesar imagen para ejercicio ${exercise.id}:`, error);
+          return {
+            ...exercise,
+            image: 'https://via.placeholder.com/150?text=No+Image+Available'
+          };
+        }
+      })
+    );
+
+    console.log('Ejercicios con imágenes (muscle):', exercisesWithImages);
+    return exercisesWithImages;
+  } catch (error) {
+    console.error(`❌ Error al obtener ejercicios similares por músculo (${muscleId}):`, error);
+    return [];
+  }
+};
+
+// Función para obtener imágenes de un ejercicio
+export const fetchSimilarExerciseImages = async (exerciseId) => {
+  try {
+    const response = await axios.get(`https://wger.de/api/v2/exerciseimage/?exercise=${exerciseId}`, {
+      headers: {
+        'Authorization': `Token ${API_KEY}`
+      }
+    });
+
+    const images = response.data.results;
+    console.log(`🖼️ Imágenes para ejercicio ${exerciseId}:`, images);
+
+    // Si hay imágenes disponibles, devuelve la URL de la primera imagen
+    if (images && images.length > 0 && images[0].image) {
+      return images[0].image;
+    } else {
+      console.log(`No se encontraron imágenes para el ejercicio ${exerciseId}`);
+      return 'https://via.placeholder.com/150?text=No+Image+Available';
+    }
+  } catch (error) {
+    console.error(`❌ Error al obtener imágenes del ejercicio ${exerciseId}:`, error);
+    return 'https://via.placeholder.com/150?text=No+Image+Available';
+  }
+};
